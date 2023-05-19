@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "D:\\GLFW\\include",
+                "D:\\CODING\\C++\\glfw\\GDGRAP1\\glad\\include"
+                // "D:\\CODING\\C++\\glfw\\GDGRAP1\\glad\\include\\glad",
+                // "D:\\CODING\\C++\\glfw\\GDGRAP1\\glad\\include\\KHR",
+                // "D:\\CODING\\C++\\glfw\\GDGRAP1\\glad\\src",
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
