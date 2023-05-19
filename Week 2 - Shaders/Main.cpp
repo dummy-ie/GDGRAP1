@@ -13,7 +13,7 @@
 static float x_mod = 0;
 static float y_mod = 0;
 
-void Key_Callback(
+static void Key_Callback(
     GLFWwindow *window,
     int key,
     int scancode,
@@ -39,6 +39,24 @@ void Key_Callback(
     {
         y_mod -= 0.1f;
     }
+}
+
+static void Cursor_Position_Callback(GLFWwindow *window, double xpos, double ypos)
+{
+
+}
+
+void Mouse_Button_Callback(GLFWwindow* window, int button, int action, int mods)
+{
+    // double x = 0;
+    // double y = 0;
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+    {
+        x_mod = 0;
+        y_mod = 0;
+    }
+
 }
 
 int main(void)
@@ -67,6 +85,8 @@ int main(void)
 
     gladLoadGL();
     glfwSetKeyCallback(window, Key_Callback);
+    glfwSetCursorPosCallback(window, Cursor_Position_Callback);
+    glfwSetMouseButtonCallback(window, Mouse_Button_Callback);
 
     std::fstream vertSrc("Shaders/sample.vert");
     std::stringstream vertBuff;
@@ -175,7 +195,7 @@ int main(void)
 
         unsigned int xLoc = glGetUniformLocation(shaderProgram, "x");
         glUniform1f(xLoc, x_mod);
-        
+
         unsigned int yLoc = glGetUniformLocation(shaderProgram, "y");
         glUniform1f(yLoc, y_mod);
 
