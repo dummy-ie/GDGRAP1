@@ -7,6 +7,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "Extensions/tiny_obj_loader.h"
 
@@ -16,7 +19,7 @@
 static float x_mod = 0;
 static float y_mod = 0;
 static float z_mod = 0;
-static float scale_mod = 20;
+static float scale_mod = 1;
 static float fov_mod = 60;
 // static float scale_x_mod = 0;
 // static float scale_y_mod = 0;
@@ -33,7 +36,7 @@ static unsigned int rgbaLoc;
 // static glm::mat4 cameraPosMatrix = glm::mat4(1.f);
 
 static GLuint shaderProgram;
-static GLuint VAO, VBO, EBO;
+static GLuint VAO, VBO, EBO, VBO_UV;
 static std::vector<GLuint> mesh_indices;
 
 static bool divideViewport = false;
@@ -171,7 +174,7 @@ void frontView()
         glViewport(0, height / 2, width / 2, height / 2);
     else
         glViewport(0, 0, width, height);
-        
+
     rgba_mod = glm::vec4(1.f, 0.f, 0.f, 1.f);
     glUseProgram(shaderProgram);
     glBindVertexArray(VAO);
@@ -200,7 +203,7 @@ void sideView()
         0);
     rgbaLoc = glGetUniformLocation(shaderProgram, "rgba");
     glUniform4fv(rgbaLoc, 1, glm::value_ptr(rgba_mod));
-    
+
     unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod, 0.f, -10.f))));
 }
@@ -218,7 +221,7 @@ void topView()
         0);
     rgbaLoc = glGetUniformLocation(shaderProgram, "rgba");
     glUniform4fv(rgbaLoc, 1, glm::value_ptr(rgba_mod));
-    
+
     unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod, 10.f, -10.f))));
 }
@@ -279,7 +282,7 @@ int main(void)
 
     glLinkProgram(shaderProgram);
 
-    std::string path = "Models/bunny.obj";
+    std::string path = "Models/myCube.obj";
     std::vector<tinyobj::shape_t> shape;
     std::vector<tinyobj::material_t> material;
     std::string warning, error;
@@ -301,9 +304,39 @@ int main(void)
             shape[0].mesh.indices[i].vertex_index);
     }
 
+    // UV array
+    GLfloat UV[]{
+        0.f, 2.f,
+        0.f, 0.f,
+        2.f, 2.f,
+        2.f, 0.f,
+        2.f, 2.f,
+        2.f, 0.f,
+        0.f, 2.f,
+        0.f, 0.f};
+
+    // texture mapping
+    int img_width, img_height, colorChannels;
+    stbi_set_flip_vertically_on_load(true); // flip da image
+    unsigned char *tex_bytes = stbi_load("Models/ayaya.png", &img_width, &img_height, &colorChannels, 0);
+
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_bytes);
+    // generate MIPMAPS! (arent they the little image duplicates for when it gets far away??)
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // Free loaded bytes
+    stbi_image_free(tex_bytes);
+    glEnable(GL_DEPTH_TEST);
+
     // initialize VAO and VBO
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &VBO_UV);
     glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
@@ -332,11 +365,16 @@ int main(void)
         mesh_indices.data(),
         GL_STATIC_DRAW);
 
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_UV);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * (sizeof(UV) / sizeof(UV[0])), &UV[0], GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
+    glEnableVertexAttribArray(2);
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // glm::mat4 projection = glm::ortho(-2.f, 2.f, -2.f, 2.f, -1.f, 1.f);
         glm::mat4 projection = glm::perspective(glm::radians(fov_mod), height / width, 0.1f, 100.f);
@@ -358,6 +396,12 @@ int main(void)
 
         unsigned int yLoc = glGetUniformLocation(shaderProgram, "y");
         glUniform1f(yLoc, y_mod);
+
+        GLuint tex0Address = glGetUniformLocation(shaderProgram, "tex0");
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glUniform1i(tex0Address, 0);
 
         // Draw
 
