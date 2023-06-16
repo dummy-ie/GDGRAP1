@@ -21,8 +21,8 @@ static float fov_mod = 60;
 // static float scale_x_mod = 0;
 // static float scale_y_mod = 0;
 // static float scale_z_mod = 0;
-static float theta_mod1 = 0;
-static float theta_mod2 = 0;
+static float theta_hor = 0;
+static float theta_ver = 0;
 static float height = 600.f;
 static float width = 600.f;
 
@@ -55,22 +55,22 @@ static void Key_Callback(
 
     if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT)
     {
-        theta_mod1 += 10.f;
+        theta_hor += 10.f;
     }
 
     if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT)
     {
-        theta_mod1 -= 10.f;
+        theta_hor -= 10.f;
     }
 
     if (key == GLFW_KEY_UP && action == GLFW_REPEAT)
     {
-        theta_mod2 += 10.f;
+        theta_ver += 10.f;
     }
 
     if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT)
     {
-        theta_mod2 -= 10.f;
+        theta_ver -= 10.f;
     }
 
     if (key == GLFW_KEY_E && action == GLFW_REPEAT)
@@ -276,8 +276,8 @@ int main(void)
         glm::mat4 identity_matrix4 = glm::mat4(1.f);
         glm::mat4 transformation_matrix = glm::translate(identity_matrix4, glm::vec3(x_mod, y_mod, z_mod));
         transformation_matrix = glm::scale(transformation_matrix, glm::vec3(scale_mod, scale_mod, scale_mod));
-        transformation_matrix = glm::rotate(transformation_matrix, glm::radians(theta_mod1), glm::vec3(0, 1, 0));
-        transformation_matrix = glm::rotate(transformation_matrix, glm::radians(theta_mod2), glm::vec3(1, 0, 0));
+        transformation_matrix = glm::rotate(transformation_matrix, glm::radians(theta_hor), glm::vec3(0, 1, 0));
+        transformation_matrix = glm::rotate(transformation_matrix, glm::radians(theta_ver), glm::vec3(1, 0, 0));
 
         unsigned int transformLoc = glGetUniformLocation(shaderProgram, "transform");
         glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
