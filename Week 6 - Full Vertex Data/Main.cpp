@@ -19,10 +19,10 @@
 static glm::vec3 camPos = glm::vec3(0.f);
 static glm::vec3 camRot = glm::vec3(0.f);
 
-static float x_mod = 0;
-static float y_mod = 0;
+static float x_mod = 20.f;
+static float y_mod = 3.f;
 static float z_mod = 0;
-static float scale_mod = 1;
+static float scale_mod = 0.2f;
 static float fov_mod = 60;
 // static float scale_x_mod = 0;
 // static float scale_y_mod = 0;
@@ -148,7 +148,7 @@ glm::mat4 generateViewMatrix(glm::vec3 cameraPos)
         cameraPos * -1.0f);
 
     glm::vec3 worldUp = glm::normalize(glm::vec3(0, 1.f, 0));
-    glm::vec3 cameraCenter = glm::vec3(x_mod, 3.f, z_mod);
+    glm::vec3 cameraCenter = glm::vec3(0.f, 3.f, 0.f);
 
     glm::vec3 F = cameraCenter - cameraPos;
     F = glm::normalize(F);
@@ -193,21 +193,7 @@ void frontView()
     glUniform4fv(rgbaLoc, 1, glm::value_ptr(rgba_mod));
 
     unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod + 10.f, 0.f, z_mod))));
-
-    // rgba_mod = glm::vec4(1.0f, 0.72f, 0.77f, 1.0f);
-    // glUseProgram(shaderProgram);
-    // glBindVertexArray(VAO);
-    // glDrawElements(
-    //     GL_TRIANGLES,
-    //     mesh_indices.size(),
-    //     GL_UNSIGNED_INT,
-    //     0);
-    // rgbaLoc = glGetUniformLocation(shaderProgram, "rgba");
-    // glUniform4fv(rgbaLoc, 1, glm::value_ptr(rgba_mod));
-
-    // viewLoc = glGetUniformLocation(shaderProgram, "view");
-    // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod, 0.f, z_mod - 10.f))));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod, 0.f, z_mod))));
 }
 
 void sideView()
@@ -302,7 +288,7 @@ int main(void)
 
     glLinkProgram(shaderProgram);
 
-    std::string path = "Models/bunny.obj";
+    std::string path = "Models/djSword.obj";
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> material;
     std::string warning, error;
@@ -328,39 +314,17 @@ int main(void)
     for (size_t i = 0; i < shapes[0].mesh.indices.size(); i++)
     {
         tinyobj::index_t vData = shapes[0].mesh.indices[i];
-        fullVertexData.push_back(attributes.vertices.at(vData.vertex_index * 3)); 
-        fullVertexData.push_back(attributes.vertices.at(vData.vertex_index * 3 + 1)); 
-        fullVertexData.push_back(attributes.vertices.at(vData.vertex_index * 3 + 2)); 
+        fullVertexData.push_back(attributes.vertices.at((vData.vertex_index * 3))); 
+        fullVertexData.push_back(attributes.vertices.at((vData.vertex_index * 3) + 1)); 
+        fullVertexData.push_back(attributes.vertices.at((vData.vertex_index * 3) + 2)); 
 
-        fullVertexData.push_back(attributes.vertices.at(vData.normal_index * 3)); 
-        fullVertexData.push_back(attributes.vertices.at(vData.normal_index * 3 + 1)); 
-        fullVertexData.push_back(attributes.vertices.at(vData.normal_index * 3 + 2)); 
+        // fullVertexData.push_back(attributes.vertices.at((vData.normal_index * 3))); 
+        // fullVertexData.push_back(attributes.vertices.at((vData.normal_index * 3) + 1)); 
+        // fullVertexData.push_back(attributes.vertices.at((vData.normal_index * 3) + 2)); 
 
-        fullVertexData.push_back(attributes.texcoords.at(vData.texcoord_index * 2)); 
-        fullVertexData.push_back(attributes.texcoords.at(vData.texcoord_index * 2 + 1)); 
+        fullVertexData.push_back(attributes.texcoords.at((vData.texcoord_index * 2))); 
+        fullVertexData.push_back(attributes.texcoords.at((vData.texcoord_index * 2) + 1)); 
     }
-    // for (int i = 0; i < shapes[0].mesh.indices.size(); i++) {
-    //     tinyobj::index_t vData = shapes[0].mesh.indices[i];
-    //     // X
-    //     fullVertexData.push_back(attributes.vertices[vData.vertex_index * 3]);
-    //     // Y
-    //     fullVertexData.push_back(attributes.vertices[vData.vertex_index * 3 + 1]);
-    //     // Z
-    //     fullVertexData.push_back(attributes.vertices[vData.vertex_index * 3 + 2]);
-
-    //     fullVertexData.push_back(attributes.texcoords[vData.texcoord_index * 2]);
-    //     fullVertexData.push_back(attributes.texcoords[vData.texcoord_index * 2 + 1]);
-    // }
-    // UV array
-    // GLfloat UV[]{
-    //     0.f, 1.f,   
-    //     0.f, 0.f,
-    //     1.f, 1.f,
-    //     1.f, 0.f,
-    //     1.f, 1.f,
-    //     1.f, 0.f,
-    //     0.f, 1.f,
-    //     0.f, 0.f};
 
     // texture mapping
     int img_width, img_height, colorChannels;
@@ -394,25 +358,25 @@ int main(void)
         sizeof(GLfloat) * fullVertexData.size(),
         fullVertexData.data(),
         // attributes.vertices.data(),
-        GL_STATIC_DRAW);
+        GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(
         0,
         3, // X Y Z
         GL_FLOAT,
         GL_FALSE,
-        5 * sizeof(GLfloat),
+        5 * sizeof(GL_FLOAT),
         (void *)0);
     
-    GLintptr normalsPtr = 2 * sizeof(float);
-    glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        5 * sizeof(GL_FLOAT),
-        (void*)normalsPtr
-    );
+    // GLintptr normalsPtr = 3 * sizeof(float);
+    // glVertexAttribPointer(
+    //     1,
+    //     3,
+    //     GL_FLOAT,
+    //     GL_FALSE,
+    //     8 * sizeof(GL_FLOAT),
+    //     (void*)normalsPtr
+    // );
     
     GLintptr uvPtr = 3 * sizeof(float);
     glVertexAttribPointer(
@@ -425,18 +389,8 @@ int main(void)
     );
 
     glEnableVertexAttribArray(0);
+    // glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glBufferData(
-    //     GL_ELEMENT_ARRAY_BUFFER,
-    //     sizeof(GLuint) * mesh_indices.size(),
-    //     mesh_indices.data(),
-    //     GL_STATIC_DRAW);
-
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO_UV);
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * (sizeof(UV) / sizeof(UV[0])), &UV[0], GL_DYNAMIC_DRAW);
-    // glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *)0);
-    // glEnableVertexAttribArray(2);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
