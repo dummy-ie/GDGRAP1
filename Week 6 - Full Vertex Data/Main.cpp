@@ -188,7 +188,7 @@ void frontView()
     //     mesh_indices.size(),
     //     GL_UNSIGNED_INT,
     //     0);
-    glDrawArrays(GL_TRIANGLES, 0, fullVertexData.size() / 5);
+    glDrawArrays(GL_TRIANGLES, 0, fullVertexData.size() / 8);
     rgbaLoc = glGetUniformLocation(shaderProgram, "rgba");
     glUniform4fv(rgbaLoc, 1, glm::value_ptr(rgba_mod));
 
@@ -196,41 +196,41 @@ void frontView()
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod, 0.f, z_mod))));
 }
 
-void sideView()
-{
-    glViewport(width / 2, height / 2, width / 2, height / 2);
-    rgba_mod = glm::vec4(1.0f, 0.72f, 0.77f, 1.0f);
-    glUseProgram(shaderProgram);
-    glBindVertexArray(VAO);
-    glDrawElements(
-        GL_TRIANGLES,
-        mesh_indices.size(),
-        GL_UNSIGNED_INT,
-        0);
-    rgbaLoc = glGetUniformLocation(shaderProgram, "rgba");
-    glUniform4fv(rgbaLoc, 1, glm::value_ptr(rgba_mod));
+// void sideView()
+// {
+//     glViewport(width / 2, height / 2, width / 2, height / 2);
+//     rgba_mod = glm::vec4(1.0f, 0.72f, 0.77f, 1.0f);
+//     glUseProgram(shaderProgram);
+//     glBindVertexArray(VAO);
+//     glDrawElements(
+//         GL_TRIANGLES,
+//         mesh_indices.size(),
+//         GL_UNSIGNED_INT,
+//         0);
+//     rgbaLoc = glGetUniformLocation(shaderProgram, "rgba");
+//     glUniform4fv(rgbaLoc, 1, glm::value_ptr(rgba_mod));
 
-    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod, 0.f, z_mod - 10.f))));
-}
+//     unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+//     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod, 0.f, z_mod - 10.f))));
+// }
 
-void topView()
-{
-    glViewport(width / 3, 0, width / 2, height / 2);
-    rgba_mod = glm::vec4(0.f, 0.f, 1.f, 1.f);
-    glUseProgram(shaderProgram);
-    glBindVertexArray(VAO);
-    glDrawElements(
-        GL_TRIANGLES,
-        mesh_indices.size(),
-        GL_UNSIGNED_INT,
-        0);
-    rgbaLoc = glGetUniformLocation(shaderProgram, "rgba");
-    glUniform4fv(rgbaLoc, 1, glm::value_ptr(rgba_mod));
+// void topView()
+// {
+//     glViewport(width / 3, 0, width / 2, height / 2);
+//     rgba_mod = glm::vec4(0.f, 0.f, 1.f, 1.f);
+//     glUseProgram(shaderProgram);
+//     glBindVertexArray(VAO);
+//     glDrawElements(
+//         GL_TRIANGLES,
+//         mesh_indices.size(),
+//         GL_UNSIGNED_INT,
+//         0);
+//     rgbaLoc = glGetUniformLocation(shaderProgram, "rgba");
+//     glUniform4fv(rgbaLoc, 1, glm::value_ptr(rgba_mod));
 
-    unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod, 10.f, z_mod - 10.f))));
-}
+//     unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+//     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod, 10.f, z_mod - 10.f))));
+// }
 
 int main(void)
 {
@@ -318,9 +318,9 @@ int main(void)
         fullVertexData.push_back(attributes.vertices.at((vData.vertex_index * 3) + 1)); 
         fullVertexData.push_back(attributes.vertices.at((vData.vertex_index * 3) + 2)); 
 
-        // fullVertexData.push_back(attributes.vertices.at((vData.normal_index * 3))); 
-        // fullVertexData.push_back(attributes.vertices.at((vData.normal_index * 3) + 1)); 
-        // fullVertexData.push_back(attributes.vertices.at((vData.normal_index * 3) + 2)); 
+        fullVertexData.push_back(attributes.normals.at((vData.normal_index * 3))); 
+        fullVertexData.push_back(attributes.normals.at((vData.normal_index * 3) + 1)); 
+        fullVertexData.push_back(attributes.normals.at((vData.normal_index * 3) + 2)); 
 
         fullVertexData.push_back(attributes.texcoords.at((vData.texcoord_index * 2))); 
         fullVertexData.push_back(attributes.texcoords.at((vData.texcoord_index * 2) + 1)); 
@@ -365,7 +365,7 @@ int main(void)
         3, // X Y Z
         GL_FLOAT,
         GL_FALSE,
-        5 * sizeof(GL_FLOAT),
+        8 * sizeof(GL_FLOAT),
         (void *)0);
     
     // GLintptr normalsPtr = 3 * sizeof(float);
@@ -378,13 +378,13 @@ int main(void)
     //     (void*)normalsPtr
     // );
     
-    GLintptr uvPtr = 3 * sizeof(float);
+    GLintptr uvPtr = 6 * sizeof(float);
     glVertexAttribPointer(
         2,
         2,
         GL_FLOAT,
         GL_FALSE,
-        5 * sizeof(GL_FLOAT),
+        8 * sizeof(GL_FLOAT),
         (void*)uvPtr
     );
 
@@ -429,11 +429,11 @@ int main(void)
 
         frontView();
 
-        if (divideViewport)
-        {
-            sideView();
-            topView();
-        }
+        // if (divideViewport)
+        // {
+        //     sideView();
+        //     topView();
+        // }
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
