@@ -16,7 +16,7 @@
 static float x_mod = 0;
 static float y_mod = 0;
 static float z_mod = -5;
-static float scale_mod = 1;
+static float scale_mod = 5;
 static float fov_mod = 60;
 // static float scale_x_mod = 0;
 // static float scale_y_mod = 0;
@@ -256,8 +256,9 @@ int main(void)
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // glm::mat4 projection = glm::ortho(-2.f, 2.f, -2.f, 2.f, -1.f, 1.f);
+        // glm::mat4 projection = glm::ortho(-0.5f, 0.5f, -0.5f, 0.5f, -6.f, 6.f);
         glm::mat4 projection = glm::perspective(glm::radians(fov_mod), height / width, 0.1f, 100.f);
+        // glm::mat4 projection = glm::mat4(1.f);
 
         unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
