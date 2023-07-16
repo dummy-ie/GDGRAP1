@@ -41,15 +41,15 @@ glm::mat4 generateViewMatrix(glm::vec3 cameraPos)
 {
     // calculate the camera's facing direction
     camDir = glm::vec3(
-        cos(theta_ver) * sin(theta_hor),
-        sin(theta_ver),
-        cos(theta_ver) * cos(theta_hor));
+        cos(glm::radians(theta_ver)) * sin(glm::radians(theta_hor)),
+        sin(glm::radians(theta_ver)),
+        cos(glm::radians(theta_ver)) * cos(glm::radians(theta_hor)));
 
     // Recalculate the right vector relative to camera view
     worldRight = glm::vec3(
-        sin(theta_hor - 3.14f / 2.0f),
+        sin(glm::radians(theta_hor) - 3.14f / 2.0f),
         0,
-        cos(theta_hor - 3.14f / 2.0f));
+        cos(glm::radians(theta_hor) - 3.14f / 2.0f));
 
     // world Up : perpendicular to look direction and world right
     glm::vec3 worldUp = glm::cross(worldRight, camDir);
@@ -123,8 +123,8 @@ static void Cursor_Position_Callback(GLFWwindow *window, double xpos, double ypo
     // if the window is focused, rotate the camera by the mouse movement in relation to the window size.
     if (glfwGetWindowAttrib(window, GLFW_FOCUSED))
     {
-        theta_hor += 0.001f * float(width / 2 - xpos);
-        theta_ver += 0.001f * float(height / 2 - ypos);
+        theta_hor += 0.1f * float(width / 2 - xpos);
+        theta_ver += 0.1f * float(height / 2 - ypos);
     }
 }
 
@@ -274,7 +274,8 @@ int main(void)
         glfwSetCursorPos(window, height / 2.f, width / 2.f);
 
         // glm::mat4 projection = glm::ortho(-2.f, 2.f, -2.f, 2.f, -1.f, 1.f);
-        glm::mat4 projection = glm::perspective(glm::radians(fov_mod), height / width, 0.1f, 100.f); // perspective projection
+        glm::mat4 projection = glm::ortho(-(width / 10.f), width / 10.f, -(height / 10.f), height / 10.f, 0.1f, 100.f);
+        // glm::mat4 projection = glm::perspective(glm::radians(fov_mod), height / width, 0.1f, 100.f); // perspective projection
 
         // Projection Matrix
         unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
