@@ -215,8 +215,8 @@ int main(void)
     PerspectiveCamera frontCamera(60, height, width, vec3(0.f, 0.f, -10.f));
     OrthoCamera topCamera;
 
-    DirectionLight directionLight("dirLight", vec3(4, 11, -3), 0.5f, 0.7f, 16, vec3(1.f, 0.72f, 0.77f), vec3(1.f, 1.f, 1.f));
-    PointLight pointLight("pointLight", lightModel.position, 0.5f, 0.7f, 16, vec3(1.f, 0.72f, 0.77f), vec3(1.f, 1.f, 1.f));
+    DirectionLight directionLight("dirLight", vec3(4, 11, -3), 0.5f, 0.7f, 16, vec3(1.f, 0.f, 0.f), vec3(1.f, 1.f, 1.f));
+    PointLight pointLight("pointLight", vec3(0.f), 0.7f, 0.9f, 16, vec3(0.f, 1.f, 0.f), vec3(1.f, 1.f, 1.f));
 
     std::cout << "loaded camera" << std::endl;
 
@@ -267,11 +267,38 @@ int main(void)
 
         glUseProgram(shaderProgram);
 
-        // directionLight.applyUniforms(shaderProgram);
-        // directionLight.applyExtraUniforms(shaderProgram);
+        directionLight.applyUniforms(shaderProgram);
+        directionLight.applyExtraUniforms(shaderProgram);
         
-        // pointLight.applyUniforms(shaderProgram);
-        // pointLight.applyExtraUniforms(shaderProgram);
+        pointLight.applyUniforms(shaderProgram);
+        pointLight.applyExtraUniforms(shaderProgram);
+
+        // unsigned int ambientStrLoc = glGetUniformLocation(shaderProgram, "pointLight.ambientStr");
+        // glUniform1f(ambientStrLoc, pointLight.ambientStr);
+
+        // unsigned int specStrLoc = glGetUniformLocation(shaderProgram, "pointLight.specStr");
+        // glUniform1f(specStrLoc, pointLight.specStr);
+        
+        // unsigned int specPhongLoc = glGetUniformLocation(shaderProgram, "pointLight.specPhong");
+        // glUniform1f(specPhongLoc, pointLight.specPhong);
+
+        // unsigned int lightColorLoc = glGetUniformLocation(shaderProgram, "pointLight.lightColor");
+        // glUniform3fv(lightColorLoc, 1, value_ptr(pointLight.lightColor));
+
+        // unsigned int ambientColorLoc = glGetUniformLocation(shaderProgram, "pointLight.ambientColor");
+        // glUniform3fv(ambientColorLoc, 1, value_ptr(pointLight.ambientColor));
+
+        // unsigned int positionLoc = glGetUniformLocation(shaderProgram, "pointLight.position");
+        // glUniform3fv(positionLoc, 1, value_ptr(pointLight.position));
+
+        // unsigned int constantLoc = glGetUniformLocation(shaderProgram, "pointLight.constant");
+        // glUniform1f(constantLoc, pointLight.constant);
+
+        // unsigned int linearLoc = glGetUniformLocation(shaderProgram, "pointLight.linear");
+        // glUniform1f(linearLoc, pointLight.linear);
+        
+        // unsigned int quadraticLoc = glGetUniformLocation(shaderProgram, "pointLight.quadratic");
+        // glUniform1f(quadraticLoc, pointLight.quadratic);
 
         unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(frontCamera.generateProjectionMatrix()));

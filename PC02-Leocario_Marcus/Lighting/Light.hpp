@@ -16,9 +16,9 @@ namespace gd
     public:
         std::string shaderName;
 
-        vec3 ambient;
-        vec3 diffuse;
-        vec3 specular;
+        // vec3 ambient;
+        // vec3 diffuse;
+        // vec3 specular;
 
         float ambientStr;
         float specStr;
@@ -38,7 +38,7 @@ namespace gd
 
         void applyUniforms(GLuint &shaderProgram)
         {
-            std::cout << "applying uniforms of " << shaderName << std::endl;
+            // std::cout << "applying uniforms of " << shaderName << std::endl;
             
             unsigned int ambientStrLoc = glGetUniformLocation(shaderProgram, (shaderName + ".ambientStr").c_str());
             glUniform1f(ambientStrLoc, ambientStr);

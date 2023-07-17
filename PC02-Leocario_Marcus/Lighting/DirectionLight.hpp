@@ -17,7 +17,7 @@ namespace gd
 
         void applyExtraUniforms(GLuint &shaderProgram)
         {
-            std::cout << "applying extra uniforms of " << shaderName << std::endl;
+            // std::cout << "applying extra uniforms of " << shaderName << std::endl;
 
             unsigned int directionLoc = glGetUniformLocation(shaderProgram, (shaderName + ".direction").c_str());
             glUniform3fv(directionLoc, 1, value_ptr(direction));

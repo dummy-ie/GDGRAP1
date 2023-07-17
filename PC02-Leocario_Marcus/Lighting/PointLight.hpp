@@ -10,8 +10,8 @@ namespace gd
     public:
         vec3 position;
         float constant = 1.0f;
-        float linear = 0.14f;
-        float quadratic = 0.07f;
+        float linear = 0.045f;
+        float quadratic = 0.0075f;
 
     public:
         PointLight(std::string shaderName, vec3 position, float ambientStr, float specStr, float specPhong, vec3 lightColor, vec3 ambientColor) : 
@@ -19,7 +19,7 @@ namespace gd
 
         void applyExtraUniforms(GLuint &shaderProgram)
         {
-            std::cout << "applying extra uniforms of " << shaderName << std::endl;
+            // std::cout << "applying extra uniforms of " << shaderName << std::endl;
 
             unsigned int positionLoc = glGetUniformLocation(shaderProgram, (shaderName + ".position").c_str());
             glUniform3fv(positionLoc, 1, value_ptr(position));
