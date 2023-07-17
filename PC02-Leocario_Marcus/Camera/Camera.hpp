@@ -11,10 +11,12 @@ namespace gd
     using namespace glm;
     class Camera
     {
-    protected:
+    public:
         vec3 position = vec3(0.f, 0.f, -10.f);
         vec3 rotation = vec3(0.f);
         vec3 direction = vec3(0.f);
+    
+    protected:
         vec3 cameraRight;
 
     public:

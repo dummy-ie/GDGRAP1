@@ -5,6 +5,7 @@
 #include <math.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -51,10 +52,55 @@ using namespace gd;
 static float height = 600.f;
 static float width = 600.f;
 
+static float rotationIncrement = 5.f;
+
+static PerspectiveCamera *frontCamera;
+static OrthoCamera *topCamera;
+
+static Model3D *mainModel;
+static Model3D *lightModel;
+
+static PointLight *pointLight;
+static DirectionLight *directionLight;
+
 static bool useFrontCamera = true;
+static bool controlLight = false;
 // static bool divideViewport = false;
 
 // static OrthoCamera topCamera(vec3(0.f, 10.f, 0.f));
+
+void updateLightPosition()
+{
+    // vec4 pos = toMat4(quat(glm::radians(lightModel->rotation))) * vec4(lightModel->position, 1.f);
+    // lightModel->position = vec3(pos);
+
+    // lightModel->position;
+
+    // float r = sqrt(lightModel->position.x * lightModel->position.x + lightModel->position.y * lightModel->position.y + lightModel->position.z * lightModel->position.z);
+    // float longitude = atan2(lightModel->position.y, lightModel->position.x);
+    // float lat = acos(lightModel->position.z / r);
+
+    // lightModel->position.x = r * sin(lat) * cos(longitude);
+    // lightModel->position.y = r * sin(lat) * sin(longitude);
+    // lightModel->position.z = r * cos(lat);
+    
+    // lightModel->position.x = 10.f * sin(glm::radians(lightModel->rotation.z)) * cos(glm::radians(lightModel->rotation.x));
+    // lightModel->position.y = 10.f * sin(glm::radians(lightModel->rotation.z)) * sin(glm::radians(lightModel->rotation.x));
+    // lightModel->position.z = 10.f * cos(glm::radians(lightModel->rotation.z)) * cos(glm::radians(lightModel->rotation.y));
+
+    lightModel->rotation = glm::radians(lightModel->rotation);
+    lightModel->position = toMat4(quat(lightModel->rotation)) * vec4(lightModel->position, 1.f);
+
+    // lightModel->position.x = (cos(glm::radians(lightModel->rotation.y)) * sin(glm::radians(lightModel->rotation.x))) * 10.f;
+    // lightModel->position.y = sin(glm::radians(lightModel->rotation.y)) * 10.f;
+    // lightModel->position.z = (cos(glm::radians(lightModel->rotation.y)) * cos(glm::radians(lightModel->rotation.x))) * 10.f;
+
+    // lightModel->rotation.x = -(cos(glm::radians(lightModel->rotation.y)) * sin(glm::radians(lightModel->rotation.x))) * 10.f;
+    // lightModel->rotation.y = -sin(glm::radians(lightModel->rotation.y)) * 10.f;
+    // lightModel->rotation.z = -(cos(glm::radians(lightModel->rotation.y)) * cos(glm::radians(lightModel->rotation.x))) * 10.f;
+
+    // pointLight->position = lightModel->position;
+}
 
 static void Key_Callback(
     GLFWwindow *window,
@@ -63,55 +109,164 @@ static void Key_Callback(
     int action,
     int mod)
 {
-    // if (key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS))
-    // {
-    //     x_mod += 0.1f;
-    // }
+    if (key == GLFW_KEY_1 && (action == GLFW_REPEAT || action == GLFW_PRESS))
+    {
+        useFrontCamera = true;
+    }
 
-    // if (key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS))
-    // {
-    //     x_mod -= 0.1f;
-    // }
+    if (key == GLFW_KEY_2 && (action == GLFW_REPEAT || action == GLFW_PRESS))
+    {
+        useFrontCamera = false;
+    }
 
-    // if (key == GLFW_KEY_W && (action == GLFW_REPEAT || action == GLFW_PRESS))
-    // {
-    //     z_mod += 0.1f;
-    // }
+    if (key == GLFW_KEY_SPACE && (action == GLFW_REPEAT || action == GLFW_PRESS))
+    {
+        controlLight = !controlLight;
+        if (controlLight)
+        {
+            pointLight->lightColor = vec3(1.0f, 0.72f, 0.77f);
+            pointLight->ambientColor = vec3(1.0f, 0.72f, 0.77f);
+            // pointLight->lightColor = vec3(1.f);
+            // pointLight->ambientColor = vec3(1.f);
+            lightModel->color = vec3(1.0f, 0.72f, 0.77f);
+            mainModel->color = vec3(1.f);
+        }
+        else
+        {
+            pointLight->lightColor = vec3(1.f);
+            pointLight->ambientColor = vec3(1.f);
+            lightModel->color = vec3(1.f);
+            mainModel->color = vec3(1.f);
+        }
+    }
 
-    // if (key == GLFW_KEY_S && (action == GLFW_REPEAT || action == GLFW_PRESS))
-    // {
-    //     z_mod -= 0.1f;
-    // }
+    if (key == GLFW_KEY_D && (action == GLFW_REPEAT || action == GLFW_PRESS))
+    {
+        if (controlLight)
+        {
+            lightModel->rotation.y -= rotationIncrement;
 
-    // if (key == GLFW_KEY_RIGHT && (action == GLFW_REPEAT || action == GLFW_PRESS))
-    // {
-    //     theta_hor += 10.f;
-    // }
+            updateLightPosition();
+            pointLight->position = lightModel->position;
+            // frontCamera->rotation.y += 0.1f;
+            // frontCamera->position.y = -sin(glm::radians(frontCamera->rotation.y)) * 10.f;
+        }
+        else
+        {
+            mainModel->rotation.y -= rotationIncrement;
+        }
+    }
 
-    // if (key == GLFW_KEY_LEFT && (action == GLFW_REPEAT || action == GLFW_PRESS))
-    // {
-    //     theta_hor -= 10.f;
-    // }
+    if (key == GLFW_KEY_A && (action == GLFW_REPEAT || action == GLFW_PRESS))
+    {
+        if (controlLight)
+        {
+            lightModel->rotation.y += rotationIncrement;
 
-    // if (key == GLFW_KEY_UP && (action == GLFW_REPEAT || action == GLFW_PRESS))
-    // {
-    //     theta_ver += 10.f;
-    // }
+            updateLightPosition();
+            pointLight->position = lightModel->position;
+            // frontCamera->rotation.y += 0.1f;
+            // frontCamera->position.y = -sin(glm::radians(frontCamera->rotation.y)) * 10.f;
+        }
+        else
+        {
+            mainModel->rotation.y += rotationIncrement;
+        }
+        
+    }
 
-    // if (key == GLFW_KEY_DOWN && (action == GLFW_REPEAT || action == GLFW_PRESS))
-    // {
-    //     theta_ver -= 10.f;
-    // }
+    if (key == GLFW_KEY_W && (action == GLFW_REPEAT || action == GLFW_PRESS))
+    {
+        if (controlLight)
+        {
+            lightModel->rotation.x -= rotationIncrement;
 
-    // if (key == GLFW_KEY_E && (action == GLFW_REPEAT || action == GLFW_PRESS))
-    // {
-    //     scale_mod += 0.1f;
-    // }
+            updateLightPosition();
+            pointLight->position = lightModel->position;
+            // frontCamera->rotation.y += 0.1f;
+            // frontCamera->position.y = -sin(glm::radians(frontCamera->rotation.y)) * 10.f;
+        }
+        else
+        {
+            mainModel->rotation.x -= rotationIncrement;
+        }
+    }
 
-    // if (key == GLFW_KEY_Q && (action == GLFW_REPEAT || action == GLFW_PRESS))
-    // {
-    //     scale_mod -= 0.1f;
-    // }
+    if (key == GLFW_KEY_S && (action == GLFW_REPEAT || action == GLFW_PRESS))
+    {
+        if (controlLight)
+        {
+            lightModel->rotation.x += rotationIncrement;
+            
+            updateLightPosition();
+            pointLight->position = lightModel->position;
+            // frontCamera->rotation.y += 0.1f;
+            // frontCamera->position.y = -sin(glm::radians(frontCamera->rotation.y)) * 10.f;
+        }
+        else
+        {
+            mainModel->rotation.x += rotationIncrement;
+        }
+    }
+
+    if (key == GLFW_KEY_E && (action == GLFW_REPEAT || action == GLFW_PRESS))
+    {
+        if (controlLight)
+        {
+            lightModel->rotation.z -= rotationIncrement;
+
+            updateLightPosition();
+            pointLight->position = lightModel->position;
+            // frontCamera->rotation.y += 0.1f;
+            // frontCamera->position.y = -sin(glm::radians(frontCamera->rotation.y)) * 10.f;
+        }
+        else
+        {
+            mainModel->rotation.z -= rotationIncrement;
+        }
+    }
+
+    if (key == GLFW_KEY_Q && (action == GLFW_REPEAT || action == GLFW_PRESS))
+    {
+        if (controlLight)
+        {
+            lightModel->rotation.z += rotationIncrement;
+            
+            updateLightPosition();
+            pointLight->position = lightModel->position;
+            // frontCamera->rotation.y += 0.1f;
+            // frontCamera->position.y = -sin(glm::radians(frontCamera->rotation.y)) * 10.f;
+        }
+        else
+        {
+            mainModel->rotation.z += rotationIncrement;
+        }
+    }
+    
+    if (key == GLFW_KEY_RIGHT && (action == GLFW_REPEAT || action == GLFW_PRESS) && controlLight)
+    {
+        directionLight->ambientStr += 0.1f;
+        directionLight->specStr += 0.1f;
+    }
+
+    if (key == GLFW_KEY_LEFT && (action == GLFW_REPEAT || action == GLFW_PRESS) && controlLight)
+    {
+        directionLight->ambientStr -= 0.1f;
+        directionLight->specStr -= 0.1f;
+    }
+
+    if (key == GLFW_KEY_UP && (action == GLFW_REPEAT || action == GLFW_PRESS) && controlLight)
+    {
+        pointLight->ambientStr += 0.1f;
+        pointLight->specStr += 0.1f;
+    }
+
+    if (key == GLFW_KEY_DOWN && (action == GLFW_REPEAT || action == GLFW_PRESS) && controlLight)
+    {
+        pointLight->ambientStr -= 0.1f;
+        pointLight->specStr -= 0.1f;
+    }
+
 
     // if (key == GLFW_KEY_X && (action == GLFW_REPEAT || action == GLFW_PRESS))
     // {
@@ -126,6 +281,25 @@ static void Key_Callback(
 
 static void Cursor_Position_Callback(GLFWwindow *window, double xpos, double ypos)
 {
+    if (glfwGetWindowAttrib(window, GLFW_FOCUSED))
+    {
+        if (useFrontCamera)
+        {
+            // some dark magic ritual that works!
+            frontCamera->rotation.x += 0.1f * float(width / 2 - xpos);
+            frontCamera->rotation.y += 0.1f * float(height / 2 - ypos);
+            frontCamera->position.x = -(cos(glm::radians(frontCamera->rotation.y)) * sin(glm::radians(frontCamera->rotation.x))) * 10.f;
+            frontCamera->position.y = -sin(glm::radians(frontCamera->rotation.y)) * 10.f;
+            frontCamera->position.z = -(cos(glm::radians(frontCamera->rotation.y)) * cos(glm::radians(frontCamera->rotation.x))) * 10.f;
+        }
+        else
+        {
+            // topCamera->rotation.x += 0.1f * float(width / 2 - xpos);
+            // topCamera->rotation.y += 0.1f * float(height / 2 - ypos);
+            // std::cout << "x: " << topCamera->rotation.x << std::endl;
+            // std::cout << "y: " << topCamera->rotation.y << std::endl;
+        }
+    }
 }
 
 void Mouse_Button_Callback(GLFWwindow *window, int button, int action, int mods)
@@ -147,34 +321,6 @@ void Mouse_Button_Callback(GLFWwindow *window, int button, int action, int mods)
         // theta_hor = 0;
         // theta_ver = 0;
     }
-}
-
-void frontView()
-{
-    // if (divideViewport)
-    //     glViewport(0, height / 2, width / 2, height / 2);
-    // else
-    //     glViewport(0, 0, width, height);
-
-    // rgba_mod = glm::vec4(1.f, 0.f, 0.f, 1.f);
-}
-
-void topView()
-{
-    // glViewport(width / 3, 0, width / 2, height / 2);
-    // rgba_mod = glm::vec4(0.f, 0.f, 1.f, 1.f);
-    // glUseProgram(shaderProgram);
-    // glBindVertexArray(VAO);
-    // glDrawElements(
-    //     GL_TRIANGLES,
-    //     mesh_indices.size(),
-    //     GL_UNSIGNED_INT,
-    //     0);
-    // rgbaLoc = glGetUniformLocation(shaderProgram, "rgba");
-    // glUniform4fv(rgbaLoc, 1, glm::value_ptr(rgba_mod));
-
-    // unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-    // glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(generateViewMatrix(glm::vec3(x_mod, 10.f, z_mod - 10.f))));
 }
 
 int main(void)
@@ -209,16 +355,16 @@ int main(void)
 
     GLuint shaderProgram;
 
-    Model3D mainModel("Models/source/VoxelLink.obj", "Models/texture/VoxelLink.png", vec3(0.f, 0.f, 0.f), vec3(0.f, 180.f, 0.f), vec3(0.2f));
-    Model3D lightModel("Models/source/among us.obj", "Models/texture/Plastic_4K_Diffuse.jpg", vec3(0.f, -5.f, 0.f), vec3(0.f, 180.f, 0.f), vec3(0.01f));
+    mainModel = new Model3D("Models/source/VoxelLink.obj", "Models/texture/VoxelLink.png", vec3(1.f), vec3(0.f, -2.f, 0.f), vec3(0.f, 0.f, 0.f), vec3(0.2f));
+    lightModel = new Model3D("Models/source/among us.obj", "", vec3(1.f), vec3(0.f, 0.f, -10.f), vec3(0.f, 0.f, 0.f), vec3(0.01f));
 
-    PerspectiveCamera frontCamera(60, height, width, vec3(0.f, 0.f, -10.f));
-    OrthoCamera topCamera;
+    frontCamera = new PerspectiveCamera(60, height, width, vec3(0.f, 2.f, 20.f), vec3(0.f, 0.f, 0.f), vec3(0.f, 0.f, 0.f));
+    topCamera = new OrthoCamera(vec3(0.f, 20.f, 0.f), vec3(0.f, -90.f, 0.f), vec3(0.f, 0.f, 0.f));
 
-    DirectionLight directionLight("dirLight", vec3(4, 11, -3), 0.5f, 0.7f, 16, vec3(1.f, 0.f, 0.f), vec3(1.f, 1.f, 1.f));
-    PointLight pointLight("pointLight", vec3(0.f), 0.7f, 0.9f, 16, vec3(0.f, 1.f, 0.f), vec3(1.f, 1.f, 1.f));
+    directionLight = new DirectionLight("dirLight", vec3(4, 11, -3), 1.f, 2.f, 32, vec3(0.f, 0.f, 1.f), vec3(0.7f, 0.7f, 1.f));
+    pointLight = new PointLight("pointLight", lightModel->position + vec3(0.f, 2.f, 0.f), 0.5f, 0.7f, 32, vec3(1.f, 1.f, 1.f), vec3(1.f, 1.f, 1.f));
 
-    std::cout << "loaded camera" << std::endl;
+    std::cout << "loaded cameras" << std::endl;
 
     std::fstream vertSrc("Shaders/sample.vert");
     std::stringstream vertBuff;
@@ -246,83 +392,48 @@ int main(void)
 
     glLinkProgram(shaderProgram);
 
-    // glm::vec3 lightPos = glm::vec3(0.f, 3.f, 0.f);
-    // glm::vec3 lightColor = glm::vec3(1.0f, 0.72f, 0.77f);
-    // float ambientStr = 0.5f;
-    // glm::vec3 ambientColor = glm::vec3(1.f, 1.f, 1.f);
-    // float specStr = 0.7f;
-    // float specPhong = 16;
-
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
+        if (useFrontCamera)
+            glfwSetCursorPos(window, height / 2.f, width / 2.f);
+
         /* Render here */
         glFlush();
-        
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // glm::mat4 projection = glm::ortho(-2.f, 2.f, -2.f, 2.f, -1.f, 1.f);
-        // glm::ortho();
-        // glm::mat4 projection = glm::perspective(glm::radians(fov_mod), height / width, 0.1f, 100.f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shaderProgram);
 
-        directionLight.applyUniforms(shaderProgram);
-        directionLight.applyExtraUniforms(shaderProgram);
-        
-        pointLight.applyUniforms(shaderProgram);
-        pointLight.applyExtraUniforms(shaderProgram);
+        directionLight->applyUniforms(shaderProgram);
+        directionLight->applyExtraUniforms(shaderProgram);
 
-        // unsigned int ambientStrLoc = glGetUniformLocation(shaderProgram, "pointLight.ambientStr");
-        // glUniform1f(ambientStrLoc, pointLight.ambientStr);
+        pointLight->applyUniforms(shaderProgram);
+        pointLight->applyExtraUniforms(shaderProgram);
 
-        // unsigned int specStrLoc = glGetUniformLocation(shaderProgram, "pointLight.specStr");
-        // glUniform1f(specStrLoc, pointLight.specStr);
-        
-        // unsigned int specPhongLoc = glGetUniformLocation(shaderProgram, "pointLight.specPhong");
-        // glUniform1f(specPhongLoc, pointLight.specPhong);
+        if (useFrontCamera)
+        {
+            unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(frontCamera->generateProjectionMatrix()));
 
-        // unsigned int lightColorLoc = glGetUniformLocation(shaderProgram, "pointLight.lightColor");
-        // glUniform3fv(lightColorLoc, 1, value_ptr(pointLight.lightColor));
+            unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(frontCamera->generateViewMatrix()));
+        }
+        else
+        {
+            unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+            glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(topCamera->generateProjectionMatrix()));
 
-        // unsigned int ambientColorLoc = glGetUniformLocation(shaderProgram, "pointLight.ambientColor");
-        // glUniform3fv(ambientColorLoc, 1, value_ptr(pointLight.ambientColor));
+            unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+            glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(topCamera->generateViewMatrix()));
+        }
 
-        // unsigned int positionLoc = glGetUniformLocation(shaderProgram, "pointLight.position");
-        // glUniform3fv(positionLoc, 1, value_ptr(pointLight.position));
-
-        // unsigned int constantLoc = glGetUniformLocation(shaderProgram, "pointLight.constant");
-        // glUniform1f(constantLoc, pointLight.constant);
-
-        // unsigned int linearLoc = glGetUniformLocation(shaderProgram, "pointLight.linear");
-        // glUniform1f(linearLoc, pointLight.linear);
-        
-        // unsigned int quadraticLoc = glGetUniformLocation(shaderProgram, "pointLight.quadratic");
-        // glUniform1f(quadraticLoc, pointLight.quadratic);
-
-        unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(frontCamera.generateProjectionMatrix()));
-
-        unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(frontCamera.generateViewMatrix()));
-
-        // std::cout << "trying to draw" << std::endl;
-        mainModel.draw(shaderProgram);
-        lightModel.draw(shaderProgram);
-        // std::cout << "end draw" << std::endl;
-
+        // unsigned int gammaLoc = glGetUniformLocation(shaderProgram, "gamma");
+        // glUniform1f(gammaLoc, 0.7f);
 
         // Draw
-
-        // if (useFrontCamera)
-        //     frontView();
-        // else
-        //     topView();
-
-        // if (divideViewport)
-        // {
-        //     sideView();
-        // }
+        mainModel->draw(shaderProgram);
+        lightModel->draw(shaderProgram);
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);

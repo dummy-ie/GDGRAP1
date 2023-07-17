@@ -2,8 +2,8 @@
 
 uniform sampler2D tex0;
 
-// uniform vec4 rgba;
 uniform vec3 cameraPos;
+uniform vec4 rgba = vec4(1.f);
 
 out vec4 FragColor;
 
@@ -60,11 +60,23 @@ void main(){
 	vec3 normal = normalize(normCoord);
 	vec3 viewDir = normalize(cameraPos - fragPos);	
 
-	// FragColor = CalcDirLight(dirLight, normal, viewDir) * texture(tex0, texCoord);
-	// FragColor = CalcPointLight(pointLight, normal, fragPos, viewDir) * texture(tex0, texCoord);
-	FragColor = CalcDirLight(dirLight, normal, viewDir) * CalcPointLight(pointLight, normal, fragPos, viewDir) * texture(tex0, texCoord);
-	// FragColor = vec4(attenuation * (specColor + diffuse + ambientCol), 1.0) * texture(tex0, texCoord);
-	// FragColor = texture(tex0, texCoord);
+	vec4 tex = texture(tex0, texCoord);
+	vec4 dir = CalcDirLight(dirLight, normal, viewDir);
+	vec4 point = CalcPointLight(pointLight, normal, fragPos, viewDir);
+
+	FragColor = vec4(1.f);
+
+	if (all(greaterThan(tex, vec4(0.f))))
+		FragColor *= tex;
+
+	if (any(greaterThan(dir.xyz, vec3(0.f))))
+		FragColor *= dir;
+
+	if (any(greaterThan(point.xyz, vec3(0.f))))
+		FragColor *= point;
+	
+	if (any(lessThan(rgba.xyz, vec3(1.f))))
+		FragColor *= rgba;
 }
 
 vec4 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir)
@@ -112,7 +124,7 @@ vec4 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
 	
 	// specular
 	vec3 reflectDir = reflect(-lightDir, normal);
-	float spec = pow(max(dot(reflectDir, viewDir), 0.1), light.specPhong);
+	float spec = pow(max(dot(reflectDir, viewDir), 0.0), light.specPhong);
 	vec3 specular = spec * light.specStr * light.lightColor;
 
 	return vec4(attenuation * (specular + diffuse + ambient), 1.0);

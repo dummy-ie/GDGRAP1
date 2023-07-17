@@ -10,8 +10,8 @@ namespace gd
     public:
         vec3 position;
         float constant = 1.0f;
-        float linear = 0.045f;
-        float quadratic = 0.0075f;
+        float linear = 0.07f;
+        float quadratic = 0.017f;
 
     public:
         PointLight(std::string shaderName, vec3 position, float ambientStr, float specStr, float specPhong, vec3 lightColor, vec3 ambientColor) : 

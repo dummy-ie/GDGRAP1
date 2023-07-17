@@ -4,7 +4,7 @@ using namespace model;
 using namespace glm;
 
 // insert constructor variables into attributes
-Model3D::Model3D(std::string modelPath, std::string texturePath, vec3 pos, vec3 rot, vec3 sca) : position(pos), rotation(rot), scale(sca)
+Model3D::Model3D(std::string modelPath, std::string texturePath, vec3 color, vec3 pos, vec3 rot, vec3 sca) : color(color), position(pos), rotation(rot), scale(sca)
 {
     // std::string path = "Models/djSword.obj";
     std::vector<tinyobj::shape_t> shapes;
@@ -192,6 +192,10 @@ void Model3D::draw(GLuint &shaderProgram)
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glUniform1i(tex0Address, 0);
     // std::cout << "end tex0 uniform" << std::endl;
+
+    // if (color)
+    GLuint rgbaAddress = glGetUniformLocation(shaderProgram, "rgba");
+    glUniform4fv(rgbaAddress, 1, value_ptr(vec4(color, 1.f)));
 
     // draw
     glBindVertexArray(VAO);

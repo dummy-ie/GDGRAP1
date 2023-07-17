@@ -28,7 +28,7 @@ namespace gd
         vec3 ambientColor;
 
     public:
-        Light(std::string shaderName, float ambientStr, float specStr, float specPhong, vec3 lightColor, vec3 ambientColor) : 
+        Light(std::string shaderName, float ambientStr, float specStr, float specPhong = 32, vec3 lightColor = vec3(1.f), vec3 ambientColor = vec3(1.f)) : 
             shaderName(shaderName),
             ambientStr(ambientStr), 
             specStr(specStr), 
